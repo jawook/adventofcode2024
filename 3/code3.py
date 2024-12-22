@@ -9,6 +9,36 @@ if data == 1:
 elif data == 2:
     fn = 'input'+str(3)+'.txt'
 f = open(fn, 'r')
-raw = [j for j in f.read().splitlines()]
+raw = f.read()
 # --------------------------
+
+#%% Part 1
+
+import regex as re
+
+vals = re.findall(r'mul\([0-9]{1,3},[0-9]{1,3}\)', raw)
+
+total = 0
+for v in vals:
+    i = [int(i) for i in v.strip('mul(').strip(')').split(',')]
+    total += (i[0] * i[1])
     
+print('Part 1: The total of all of the valid products is ' + str(total))
+
+#%% Part 2
+
+vals = re.findall(r"mul\([0-9]{1,3},[0-9]{1,3}\)|do\(\)|don't\(\)", raw)
+
+total = 0
+mult = True
+for v in vals:
+    if v == 'do()': 
+        mult = True
+    elif v == "don't()":
+        mult = False
+    else:
+        if mult:
+            i = [int(i) for i in v.strip('mul(').strip(')').split(',')]
+            total += (i[0] * i[1])
+            
+print('Part 2: The total of all of the valid products is ' + str(total))
