@@ -11,4 +11,70 @@ elif data == 2:
 f = open(fn, 'r')
 raw = [j for j in f.read().splitlines()]
 # --------------------------
-    
+
+#%% Setup array
+
+import numpy as np
+arr = np.array([[j for j in row] for row in raw])
+
+def wordSearch(arr, word):
+    wrCnt = 0
+    # Horizontal and vertical searches standard
+    wrCnt += hzVtCheck(arr, word)
+    # Diagonal search standard
+    wrCnt += diagCheck(arr, word)
+    # Horizontal and vertial searches reversed
+    wrCnt += hzVtCheck(np.fliplr(np.flipud(arr)), word)
+    # Diagonal search reversed
+    wrCnt += diagCheck(np.fliplr(arr), word)
+    wrCnt += diagCheck(np.flipud(arr), word)
+    wrCnt += diagCheck(np.fliplr(np.flipud(arr)), word)
+    return wrCnt
+
+def hzVtCheck(arr, word):
+    ct = 0
+    rows, cols = arr.shape
+    wrLen = len(word)
+    for r in range(rows):
+        for c in range(cols + 1 - wrLen):
+            if ''.join(arr[r, c:c+wrLen]) == word: ct += 1
+    for r in range(rows + 1 - wrLen):
+        for c in range(cols):
+            if ''.join(arr[r:r+wrLen, c]) == word: ct += 1
+    return ct
+
+def diagCheck(arr, word):
+    ct = 0
+    rows, cols = arr.shape
+    wrLen = len(word)
+    for r in range(rows + 1 - wrLen):
+        for c in range(cols + 1 - wrLen):
+            txt = ''
+            for k in range (wrLen):
+                txt += arr[r + k, c + k]
+            if txt == word: ct += 1
+    return ct
+
+print('Part 1: Number of appearances of word: ' + str(wordSearch(arr, 'XMAS')))
+
+#%% Part 2
+
+def xSearch(arr):
+    ct = 0
+    rows, cols = arr.shape
+    for r in range(1, rows - 1):
+        for c in range(1, cols - 1):
+            masCt = 0
+            if arr[r, c] == 'A':
+                if arr[r-1, c-1] == 'M':
+                    if arr[r+1, c+1] == 'S': masCt += 1
+                if arr[r+1, c-1] == 'M':
+                    if arr[r-1, c+1] == 'S': masCt += 1
+                if arr[r+1, c+1] == 'M':
+                    if arr[r-1, c-1] == 'S': masCt += 1
+                if arr[r-1, c+1] == 'M':
+                    if arr[r+1, c-1] == 'S': masCt += 1
+                if masCt == 2:
+                    ct += 1
+    return ct
+print('Part 2: Number of appearances of X-MAS: ' + str(xSearch(arr)))
