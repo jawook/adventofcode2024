@@ -11,4 +11,71 @@ elif data == 2:
 f = open(fn, 'r')
 raw = [j for j in f.read().splitlines()]
 # --------------------------
-    
+
+#%% Data processing
+
+from itertools import product
+
+splt = [i.split(': ') for i in raw]   
+
+for j, s in enumerate(splt):
+    splt[j] = [int(s[0]), [int(i) for i in s[1].split()]]
+
+def genCombos(smbs, nums):
+    return [comb for comb in product(smbs, repeat=len(nums)-1)]
+
+from collections import deque
+
+def checkSplt(s):
+    sgns = genCombos(['+', '*'], s[1])
+    for sc in sgns:
+        sList = deque(sc)
+        pList = deque(s[1])
+        ttl = pList.popleft()
+        while pList:
+            sgn = sList.popleft()
+            if sgn == '+':
+                ttl += pList.popleft()
+            elif sgn == '*':
+                ttl *= pList.popleft()
+        if ttl == s[0]:
+            return True
+    return False
+
+#%% Part 1
+
+runTot = 0
+
+for s in splt:
+    if checkSplt(s):
+        runTot += s[0]
+        
+print('Part 1: The answer is: ' + str(runTot))
+
+#%% Part 2
+
+def checkSplt2(s):
+    sgns = genCombos(['+', '*', '||'], s[1])
+    for sc in sgns:
+        sList = deque(sc)
+        pList = deque(s[1])
+        ttl = pList.popleft()
+        while pList:
+            sgn = sList.popleft()
+            if sgn == '+':
+                ttl += pList.popleft()
+            elif sgn == '*':
+                ttl *= pList.popleft()
+            elif sgn == '||':
+                ttl = int(str(ttl) + str(pList.popleft()))
+        if ttl == s[0]:
+            return True
+    return False
+
+runTot = 0
+
+for s in splt:
+    if checkSplt2(s):
+        runTot += s[0]
+        
+print('Part 2: The answer is: ' + str(runTot))

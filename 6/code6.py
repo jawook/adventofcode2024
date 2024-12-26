@@ -11,4 +11,104 @@ elif data == 2:
 f = open(fn, 'r')
 raw = [j for j in f.read().splitlines()]
 # --------------------------
+
+#%% Process array
+
+import numpy as np
+arr = np.array([list(row) for row in raw])    
+
+#%% Part 1
+
+obs = [tuple(i) for i in np.argwhere(arr == '#')]
+gLoc = [tuple(i) for i in np.argwhere(arr == '^')][0]
+mvmts = {0: (-1, 0), 90: (0, 1), 180: (1, 0), 270: (0, -1)}
+rows, cols = arr.shape
+dTra = 0
+vstd = set()
+
+def checkPath(v, o, g, d, r, c):
+    while ((g[0] >= 0 and g[0] < r) and (g[1] >= 0 and g[1] < c)):
+        v.add((g, d))
+        nxtLoc = (g[0] + mvmts[d][0], g[1] + mvmts[d][1])
+        if nxtLoc in o:
+            d = (d + 90) % 360
+            continue
+        g = nxtLoc
+    return (len(set([i[0] for i in v])), v)
+
+l, vstd = checkPath(vstd.copy(), obs.copy(), gLoc, dTra, rows, cols)
     
+print('Part 1: The answer is ' + str(l))
+
+#%% Part 2
+
+# This takes too long.  I must need to build a graph?
+
+# def has_repeating_sequence(lst):
+#     n = len(lst)
+#     for length in range(1, n // 2 + 1):
+#         for start in range(n - length * 2 + 1):
+#             if lst[start:start + length] == lst[start + length:start + length * 2]:
+#                 return True
+#     return False
+
+# def checkPath2(v, o, g, d, r, c):
+#     while ((g[0] >= 0 and g[0] < r) and (g[1] >= 0 and g[1] < c)):
+#         if has_repeating_sequence(v):
+#             return False
+#         if len(v) == 0:
+#             v.append(g)
+#             print(g)
+#         elif g != v[-1]:
+#             v.append(g)
+#             print(g)
+#         nxtLoc = (g[0] + mvmts[d][0], g[1] + mvmts[d][1])
+#         if nxtLoc in o:
+#             d = (d + 90) % 360
+#             continue
+#         g = nxtLoc
+#     return len(set(v))
+
+# possObs = [tuple(i) for i in np.argwhere(arr == '.')]
+# loopObs = []
+
+# for po in possObs:
+#     print(str(possObs.index(po)) + ' of ' + str(len(possObs)))
+#     if not checkPath2(vstd.copy(), obs.copy() + [po], gLoc, dTra, rows, cols):
+#         loopObs.append(po)
+
+# print('Part 2: The answer is: ' + str(len(loopObs)))
+
+#%% Part 2 Again
+
+dTra = 0
+
+# Modifying my visited list to include gLoc AND direction at the time
+# If gLoc and direction are ever repeated, that means that there is a loop
+
+possObs = set([i[0] for i in vstd])
+possObs.discard(gLoc)
+
+def checkPath3(v, o, g, d, r, c):
+    while ((g[0] >= 0 and g[0] < r) and (g[1] >= 0 and g[1] < c)):
+        if (g, d) in v:
+            print((g, d))
+            return False
+        else:
+            v.add((g, d))
+            nxtLoc = (g[0] + mvmts[d][0], g[1] + mvmts[d][1])
+            if nxtLoc in o:
+                d = (d + 90) % 360
+                continue
+            g = nxtLoc
+    return len(v), v
+
+goodObs = set()
+
+for po in possObs:
+    resRun = checkPath3(set(), obs.copy() + [po], gLoc, 
+                        dTra, rows, cols)
+    if not resRun:
+        goodObs.add(po)
+    
+print('Part 2: The answer is: ' + str(len(goodObs)))
