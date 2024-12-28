@@ -9,6 +9,87 @@ if data == 1:
 elif data == 2:
     fn = 'input'+str(8)+'.txt'
 f = open(fn, 'r')
-raw = [j for j in f.read().splitlines()]
-# --------------------------
+raw = []
+for j in f.read().splitlines():
+    raw.append([i for i in j])
     
+import numpy as np
+raw = np.array(raw)
+# --------------------------
+
+#%% locate info
+
+from itertools import combinations
+
+vals = list(np.unique(raw))
+vals.remove('.')
+
+anLocs = {}
+
+for v in vals:
+    anLocs[v] = np.argwhere(raw == v)
+
+anPairs = {}
+
+for l in anLocs:
+    combos = combinations(anLocs[l], 2)
+    for c in combos:
+        anPairs[str([list(i) for i in c])] = {'c0': c[0],
+                                              'c1': c[1],
+                                              's': ((c[1][0] - c[0][0]) / 
+                                                    (c[1][1] - c[0][1])),
+                                              'd': np.sqrt((c[1][0] - c[0][0])**2 + 
+                                                    (c[1][1] - c[0][1])**2),
+                                              'dy': c[1][0] - c[0][0],
+                                              'dx': c[1][1] - c[0][1]}
+
+rows, cols = raw.shape
+
+#%% Part 1
+
+antiLst = []
+
+for p in anPairs:
+    anPairs[p]['c1a'] = np.array([anPairs[p]['c1'][0] + anPairs[p]['dy'],
+                                  anPairs[p]['c1'][1] + anPairs[p]['dx']])
+    anPairs[p]['c0a'] = np.array([anPairs[p]['c0'][0] - anPairs[p]['dy'],
+                                  anPairs[p]['c0'][1] - anPairs[p]['dx']])
+    if (not (list(anPairs[p]['c1a']) in antiLst) and 
+        (0 <= anPairs[p]['c1a'][0] < rows) and 
+        (0 <= anPairs[p]['c1a'][1] < cols)):
+        antiLst.append(list(anPairs[p]['c1a']))
+    if (not (list(anPairs[p]['c0a']) in antiLst) and 
+        (0 <= anPairs[p]['c0a'][0] < rows) and 
+        (0 <= anPairs[p]['c0a'][1] < cols)):
+        antiLst.append(list(anPairs[p]['c0a']))
+        
+print('Part 1: The answer is : ' + str(len(antiLst)))
+
+#%% Part 2
+
+mPairs = set()
+
+for p in anPairs:
+    anPairs[p]['mPairs'] = []
+    r = anPairs[p]['c0a'][0]
+    c = anPairs[p]['c0a'][1]
+    while True:
+        r += anPairs[p]['dy']
+        c += anPairs[p]['dx']
+        if (0 <= r < rows) and (0 <= c < cols):
+            anPairs[p]['mPairs'].append([r, c])
+        else:
+            break
+    r = anPairs[p]['c1a'][0]
+    c = anPairs[p]['c1a'][1]
+    while True:
+        r -= anPairs[p]['dy']
+        c -= anPairs[p]['dx']
+        if (0 <= r < rows) and (0 <= c < cols):
+            anPairs[p]['mPairs'].append([r, c])
+        else:
+            break
+    for m in anPairs[p]['mPairs']:
+        mPairs.add(tuple(m))
+        
+print('Part 2: The answer is: ' + str(len(mPairs)))
