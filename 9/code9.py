@@ -9,6 +9,86 @@ if data == 1:
 elif data == 2:
     fn = 'input'+str(9)+'.txt'
 f = open(fn, 'r')
-raw = [j for j in f.read().splitlines()]
+raw = f.read()
 # --------------------------
+
+#%% Organize data
+
+dMap = raw
+dMapLen = len(dMap)
+
+posCount = 0
+idCount = 0
+fragMap = []
+
+#%% Part 1
+
+while posCount < dMapLen:
+    if posCount % 2 == 0:
+        fragMap.extend([str(idCount)] * int(dMap[posCount]))
+        idCount += 1
+    else:
+        fragMap.extend('.' * int(dMap[posCount]))
+    posCount += 1
+
+fLen = len(fragMap)
     
+while '.' in fragMap:
+    fragMap[fragMap.index('.')] = fragMap.pop()
+    
+pad = fLen - len(fragMap)
+
+# fragMap.extend(['.'] * pad)
+
+def calcChkSum(fragMap):
+    chkSum = 0
+    for i, f in enumerate(fragMap):
+        if f == '.': continue
+        chkSum += (int(f) * i)
+    return chkSum
+
+print('Part 1: The answer is ' + str(calcChkSum(fragMap)))
+    
+#%% Part 2
+
+dMap = raw
+dMapLen = len(dMap)
+
+posCount = 0
+idCount = 0
+fragMap = []
+
+while posCount < dMapLen:
+    if posCount % 2 == 0:
+        fragMap.extend([str(idCount)] * int(dMap[posCount]))
+        idCount += 1
+    else:
+        fragMap.extend('.' * int(dMap[posCount]))
+    posCount += 1
+
+fLen = len(fragMap)
+
+def findFirstGap(fragLst, char, ln):
+    count = 0
+    for i in range(len(fragLst)):
+        if fragLst[i] == char:
+            count += 1
+            if count == ln:
+                return i - ln + 1
+        else:
+            count = 0
+    return -1  # Return -1 if no such series is found
+
+for idC in range(idCount - 1, 0, -1):
+    firstLoc = fragMap.index(str(idC))
+    blLen = 0
+    checkLoc = firstLoc
+    while (checkLoc < fLen) and (fragMap[checkLoc] == str(idC)):
+        blLen += 1
+        checkLoc += 1
+    newLoc = findFirstGap(fragMap[:firstLoc], '.', blLen)
+    if newLoc == -1: continue
+    fragMap[newLoc:newLoc + blLen] = [str(idC)] * blLen
+    fragMap[firstLoc:firstLoc + blLen] = ['.'] * blLen
+    
+print('Part 2: The answer is ' + str(calcChkSum(fragMap)))
